@@ -7,6 +7,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +38,7 @@ private final Map< String, AtomicInteger > ipSet = new ConcurrentHashMap<>( 1000
 private final Map< String, Object[] > resultMap = new ConcurrentHashMap<>( 300000 );
 private final List< double[] > vectorList = new ArrayList<>( 10000 );
 final long start1 = System.currentTimeMillis();
-DecimalFormat df2 = new DecimalFormat( "0.000" );
+private static ThreadLocal< NumberFormat > nf = ThreadLocal.withInitial( () -> new DecimalFormat( "0.000" ) );
 
 public static final List< String > featureNameList = new ArrayList<>();
 
@@ -79,7 +80,8 @@ public static final int featureSize = featureNameList.size();
 public void execute( final String[] args ) throws Exception
 {
 	p( "Reading file " + args[ 0 ] + " ..." );
-	List< String > lines = new MLargeFileReader( args[ 0 ] ).readLines();
+	//List< String > lines = new MLargeFileReader( args[ 0 ] ).readLines();
+	List<String> lines = Files.readAllLines( Paths.get( args[ 0 ] ) );
 	List< String > linesNotShuffled = new ArrayList<>( lines );
 	Collections.shuffle( lines );
 	p( "Total number of lines: " + lines.size() );
@@ -122,7 +124,7 @@ public void execute( final String[] args ) throws Exception
 	for( Map.Entry< String, Object[] > entry : resultMap.entrySet() )
 	{
 		final Object[] value = entry.getValue();
-		result1.add( value[ 0 ] + " " + value[ 1 ] );
+		result1.add( nf.get().format( value[ 0 ] ) + " " + value[ 1 ] );
 	}
 
 	p( "Sorting results ..." );
@@ -185,7 +187,7 @@ public String score( final MIFModel model, final String s )
 		final double score = model.getScore( vector );
 
 		resultMap.compute( ip, ( k, v ) -> score( k, v, score, s ) );
-		return df2.format( score ) + " " + s;
+		return nf.get().format( score ) + " " + s;
 	}
 	catch( Exception e )
 	{
