@@ -1,0 +1,6 @@
+*.class
+bin/
+work/
+src/anomaly/
+data/*.txt
+data/*.log
