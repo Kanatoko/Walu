@@ -1,6 +1,7 @@
 *.class
 bin/
 work/
-src/anomaly/
+src/anomaly/*.java
+src/anomaly/*.class
 data/*.txt
 data/*.log
